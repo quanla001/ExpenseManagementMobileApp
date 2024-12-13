@@ -80,8 +80,13 @@ public class EditTransactionActivity extends AppCompatActivity {
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
         );
+
+        // Restrict future dates
+        datePicker.getDatePicker().setMaxDate(System.currentTimeMillis());
+
         datePicker.show();
     }
+
 
     private String formatDate(Calendar calendar) {
         return android.text.format.DateFormat.format("dd-MM-yyyy", calendar).toString();

@@ -150,8 +150,13 @@ public class TransactionActivity extends AppCompatActivity {
                     calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH)
             );
+
+            // Restrict future dates
+            datePicker.getDatePicker().setMaxDate(System.currentTimeMillis());
+
             datePicker.show();
         });
+
 
         btnSubmit.setOnClickListener(v -> {
             // Remove formatting and validate amount input
@@ -251,6 +256,7 @@ public class TransactionActivity extends AppCompatActivity {
         return android.text.format.DateFormat.format("dd-MM-yyyy", calendar).toString();
     }
 
+    // Update Category Spinner
     private void updateCategorySpinner(int type) {
         ArrayList<String> categoryNames = categoryDB.getCategoryNamesByType(type);
         adapter.clear();
@@ -258,6 +264,7 @@ public class TransactionActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
+    // Update Toggle Button Styles
     private void updateToggleButtonStyles(int checkedId) {
         int selectedColor = getResources().getColor(R.color.toggle_selected);
         int selectedTextColor = getResources().getColor(R.color.toggle_text_selected);

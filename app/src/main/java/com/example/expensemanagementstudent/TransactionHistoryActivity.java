@@ -188,7 +188,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
             int categoryId = getCategoryId(category);
             cursor = expenseDB.getFilteredTransactionsForUser(userId, -1, categoryId);
         } else {
-            int transactionType = type.equals("Income") ? 1 : 0;
+            int transactionType = type.equals("Expense") ? 1 : 0;
             int categoryId = getCategoryId(category);
             cursor = expenseDB.getFilteredTransactionsForUser(userId, transactionType, categoryId);
         }
@@ -230,6 +230,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
         cursor.close();
         return categoryId;
     }
+
     private void reloadTransactions() {
         transactionOverviews.clear();
         transactionOverviews.addAll(loadTransactions()); // Reload transactions from the database

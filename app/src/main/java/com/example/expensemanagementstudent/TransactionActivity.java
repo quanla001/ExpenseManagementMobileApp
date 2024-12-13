@@ -191,9 +191,17 @@ public class TransactionActivity extends AppCompatActivity {
                     Toast.makeText(this, "Please select a date", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
-                // Notes are optional but can be trimmed
+                // Validate description (notes)
                 String notes = inputNotes.getText().toString().trim();
+                if (notes.isEmpty()) {
+                    Toast.makeText(this, "Description is required", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (notes.length() < 5 || notes.length() > 100) {
+                    Toast.makeText(this, "Description must be between 5 and 100 characters", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                // Notes are optional but can be trimmed
 
                 // Determine transaction type (1 = Income, 0 = Expense)
                 int type = (toggleGroup.getCheckedButtonId() == R.id.btn_income) ? 1 : 0;

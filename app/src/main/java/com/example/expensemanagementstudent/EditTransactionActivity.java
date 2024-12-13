@@ -2,6 +2,7 @@ package com.example.expensemanagementstudent;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -109,7 +110,7 @@ public class EditTransactionActivity extends AppCompatActivity {
             inputEditDate.setText(date);
 
             // Update spinner categories based on transaction type
-            updateCategorySpinner(type);
+            updateCategorySpinner(transactionType, categoryId);
 
             // Match the category ID to the category name
             ArrayList<String> categories = categoryDB.getCategoryNamesByType(type);
@@ -135,18 +136,34 @@ public class EditTransactionActivity extends AppCompatActivity {
     /**
      * Update category spinner based on transaction type.
      */
-    private void updateCategorySpinner(int type) {
+    private void updateCategorySpinner(int transactionType, int categoryId) {
         // Reverse the type: 0 (income) -> 1 (expense), and 1 (expense) -> 0 (income)
-        int reversedType = (type == 0) ? 1 : 0;
+        int reversedType = (transactionType == 0) ? 1 : 0;
 
-        // Get category names based on the reversed type
+        // Fetch category names based on the reversed type
         ArrayList<String> categoryNames = categoryDB.getCategoryNamesByType(reversedType);
 
         // Set up the spinner adapter
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categoryNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         editCategorySpinner.setAdapter(adapter);
+
+        // Retrieve the category name associated with the categoryId
+        String selectedCategoryName = null;
+        Cursor cursor = expenseDB.getCategoryById(categoryId);
+        if (cursor != null && cursor.moveToFirst()) {
+            selectedCategoryName = cursor.getString(cursor.getColumnIndex("name"));
+            cursor.close();
+        }
+
+        // Set the spinner to show the correct category
+        if (selectedCategoryName != null && categoryNames.contains(selectedCategoryName)) {
+            int position = categoryNames.indexOf(selectedCategoryName);
+            editCategorySpinner.setSelection(position);
+        }
     }
+
+
 
 
     /**
@@ -170,7 +187,11 @@ public class EditTransactionActivity extends AppCompatActivity {
             boolean isUpdated = expenseDB.updateTransaction(transactionId, amount, description, date, categoryId, transactionType);
             if (isUpdated) {
                 Toast.makeText(this, "Transaction updated successfully", Toast.LENGTH_SHORT).show();
-                finish();
+
+                // Notify success and return to the caller
+                Intent resultIntent = new Intent();
+                setResult(RESULT_OK, resultIntent);
+                finish(); // Close the activity
             } else {
                 Toast.makeText(this, "Error updating transaction", Toast.LENGTH_SHORT).show();
             }
@@ -178,6 +199,7 @@ public class EditTransactionActivity extends AppCompatActivity {
             Toast.makeText(this, "Invalid amount entered", Toast.LENGTH_SHORT).show();
         }
     }
+
 
 
 }

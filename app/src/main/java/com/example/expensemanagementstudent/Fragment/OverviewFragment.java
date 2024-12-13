@@ -105,11 +105,18 @@ public class OverviewFragment extends Fragment {
             updateMonthYearDisplay();
             updateIncomeAndExpense();
         });
+
         nextMonth.setOnClickListener(v -> {
-            calendar.add(Calendar.MONTH, 1);
-            updateMonthYearDisplay();
-            updateIncomeAndExpense();
+            Calendar currentDate = Calendar.getInstance(); // Get the current date
+            if (calendar.get(Calendar.YEAR) < currentDate.get(Calendar.YEAR) ||
+                    (calendar.get(Calendar.YEAR) == currentDate.get(Calendar.YEAR) && calendar.get(Calendar.MONTH) < currentDate.get(Calendar.MONTH))) {
+                // Allow adding a month only if it's not the current month or future
+                calendar.add(Calendar.MONTH, 1);
+                updateMonthYearDisplay();
+                updateIncomeAndExpense();
+            }
         });
+
 
         seeAllButton.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), TransactionHistoryActivity.class);
@@ -121,14 +128,14 @@ public class OverviewFragment extends Fragment {
             startActivity(intent);
         });
 
-        // Initialize views
+        // Initialize notification icon
         ImageView notificationIcon = rootView.findViewById(R.id.notificationIcon);
 
         // Load the current notification state
         SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         notificationsEnabled = prefs.getBoolean("notificationsEnabled", true);
 
-        // Set initial icon based on the state
+        // Set the initial icon state
         updateNotificationIcon(notificationIcon);
 
         // Handle notification icon click
@@ -138,12 +145,14 @@ public class OverviewFragment extends Fragment {
             updateNotificationIcon(notificationIcon);     // Update the icon
             showNotificationToggleMessage();              // Show a message
         });
+
         // Load transactions dynamically into the container
         loadTransactions();
         updateIncomeAndExpense(); // Update income, expense, and balance values
 
         return rootView;
     }
+
 
     private void updateMonthYearDisplay() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy", Locale.ENGLISH);
@@ -187,11 +196,18 @@ public class OverviewFragment extends Fragment {
         // Check for income threshold
         checkIncomeThreshold(totalIncome, totalBalance);
     }
-
+    // Check income and balance thresholds
     private void checkIncomeThreshold(float totalIncome, double totalBalance) {
+        // Fetch the notification state
         SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        boolean notificationsEnabled = prefs.getBoolean("notificationsEnabled", true); // Default: enabled
         long lastNotificationTime = prefs.getLong(LAST_NOTIFICATION_TIME, 0);
         double lastNotifiedBalance = Double.longBitsToDouble(prefs.getLong(LAST_BALANCE, Double.doubleToLongBits(0)));
+
+        // If notifications are disabled, skip
+        if (!notificationsEnabled) {
+            return;
+        }
 
         // Current time
         long currentTime = System.currentTimeMillis();
@@ -218,9 +234,10 @@ public class OverviewFragment extends Fragment {
         }
     }
 
-
     // Update the notification icon based on the current state
     private void updateNotificationIcon(ImageView notificationIcon) {
+        SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        boolean notificationsEnabled = prefs.getBoolean("notificationsEnabled", true); // Default: enabled
         if (notificationsEnabled) {
             notificationIcon.setImageResource(R.drawable.bell); // Replace with your "bell" icon
         } else {
@@ -249,6 +266,16 @@ public class OverviewFragment extends Fragment {
         editor.putLong(LAST_NOTIFICATION_TIME, currentTime);
         editor.putLong(LAST_BALANCE, Double.doubleToLongBits(totalBalance));
         editor.apply();
+    }
+
+    // Toggle the notification state
+    private void toggleNotifications(ImageView notificationIcon) {
+        SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        boolean notificationsEnabled = prefs.getBoolean("notificationsEnabled", true);
+        notificationsEnabled = !notificationsEnabled; // Toggle state
+        saveNotificationState(notificationsEnabled);
+        updateNotificationIcon(notificationIcon);
+        showNotificationToggleMessage();
     }
 
 

@@ -72,9 +72,10 @@ public class ExpenseDB {
         cursor.close();
     }
     public Cursor getCategoryById(int categoryId) {
-        String query = "SELECT name FROM categories WHERE _id = ?";
+        String query = "SELECT name FROM categories WHERE " + DatabaseHelper.CATEGORY_ID_COL + " = ?";
         return db.rawQuery(query, new String[]{String.valueOf(categoryId)});
     }
+
 
 
     // Add a transaction (income or expense)
@@ -93,34 +94,7 @@ public class ExpenseDB {
         return db.insert(DatabaseHelper.EXPENSE_TABLE, null, values);
     }
 
-    public Cursor getAllTransactions() {
-        String query = "SELECT e.*, c.name AS category_name " +
-                "FROM " + DatabaseHelper.EXPENSE_TABLE + " e " +
-                "INNER JOIN " + DatabaseHelper.CATEGORY_TABLE + " c " +
-                "ON e." + DatabaseHelper.EXPENSE_CATEGORY_ID_COL + " = c." + DatabaseHelper.CATEGORY_ID_COL +
-                " ORDER BY e." + DatabaseHelper.DATE_COL + " DESC";
-        return db.rawQuery(query, null);
-    }
 
-    public Cursor getTransactionsByType(int type) {
-        String query = "SELECT e.*, c.name AS category_name " +
-                "FROM " + DatabaseHelper.EXPENSE_TABLE + " e " +
-                "INNER JOIN " + DatabaseHelper.CATEGORY_TABLE + " c " +
-                "ON e." + DatabaseHelper.EXPENSE_CATEGORY_ID_COL + " = c." + DatabaseHelper.CATEGORY_ID_COL +
-                " WHERE e." + DatabaseHelper.TYPE_COL + " = ? " +
-                "ORDER BY e." + DatabaseHelper.DATE_COL + " DESC";
-        return db.rawQuery(query, new String[]{String.valueOf(type)});
-    }
-
-    public Cursor getTransactionsByCategory(String categoryName) {
-        String query = "SELECT e.*, c.name AS category_name " +
-                "FROM " + DatabaseHelper.EXPENSE_TABLE + " e " +
-                "INNER JOIN " + DatabaseHelper.CATEGORY_TABLE + " c " +
-                "ON e." + DatabaseHelper.EXPENSE_CATEGORY_ID_COL + " = c." + DatabaseHelper.CATEGORY_ID_COL +
-                " WHERE c." + DatabaseHelper.CATEGORY_NAME_COL + " = ? " +
-                "ORDER BY e." + DatabaseHelper.DATE_COL + " DESC";
-        return db.rawQuery(query, new String[]{categoryName});
-    }
     public Cursor getTransactionsByUserId(int userId) {
         String query = "SELECT e.*, c.name AS category_name " +
                 "FROM expenses e " +
@@ -168,6 +142,7 @@ public class ExpenseDB {
                 " ORDER BY e." + DatabaseHelper.DATE_COL + " DESC";
         return db.rawQuery(query, new String[]{String.valueOf(userId)});
     }
+    // Update Transaction
     public boolean updateTransaction(int transactionId, double amount, String description, String date, int categoryId, int type) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.AMOUNT_COL, amount);

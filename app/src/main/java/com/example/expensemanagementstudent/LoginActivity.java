@@ -57,13 +57,13 @@ public class LoginActivity extends AppCompatActivity {
 
         // Xử lý sự kiện nhấn nút "Get Started"
         btnLogin.setOnClickListener(view -> {
-            String username = edtUsername.getText().toString().trim();
+            String input = edtUsername.getText().toString().trim(); // Có thể là username hoặc email
             String password = edtPassword.getText().toString().trim();
 
-            if (username.isEmpty() || password.isEmpty()) {
+            if (input.isEmpty() || password.isEmpty()) {
                 Toast.makeText(LoginActivity.this, "Please enter complete information!", Toast.LENGTH_SHORT).show();
             } else {
-                String loginResult = userDB.checkLogin(username, password);
+                String loginResult = userDB.checkLogin(input, password); // Dùng phương thức checkLogin mới
                 switch (loginResult) {
                     case "USER_NOT_FOUND":
                         Toast.makeText(LoginActivity.this, "User does not exist!", Toast.LENGTH_SHORT).show();
@@ -75,11 +75,19 @@ public class LoginActivity extends AppCompatActivity {
 
                     case "LOGIN_SUCCESS":
                         Toast.makeText(LoginActivity.this, "Login successful.", Toast.LENGTH_SHORT).show();
-                        int userId = userDB.getUserId(username);
+                        int userId = userDB.getUserId(input); // Lấy userId bằng input (username hoặc email)
+
+                        // Nếu đăng nhập bằng email, lấy username tương ứng từ cơ sở dữ liệu
+                        String username;
+                        if (input.contains("@")) { // Nếu là email
+                            username = userDB.getUsernameByEmail(input);  // Phương thức mới để lấy username từ email
+                        } else { // Nếu là username
+                            username = input; // Lưu trực tiếp input nếu là username
+                        }
 
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putBoolean("isLoggedIn", true);
-                        editor.putString("username", username);
+                        editor.putString("username", username);  // Lưu username vào SharedPreferences
                         editor.putInt("userId", userId);
                         editor.putBoolean("showUsernameOnce", true);
                         editor.apply();
@@ -95,6 +103,8 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+
+
 
         // Xử lý sự kiện nhấn "Sign Up"
         tvSignUp.setOnClickListener(view -> {
@@ -122,4 +132,5 @@ public class LoginActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         }
     }
+
 }

@@ -97,8 +97,8 @@ public class ReportFragment extends Fragment {
 
                 // Định dạng số tiền
                 String amountText = String.format("%,.2f", amount);
-                int textColor = (type == 1) ? getResources().getColor(R.color.red) : getResources().getColor(R.color.green);
-                String formattedAmount = (type == 1 ? "-" : "+") + amountText;
+                int textColor = (type == 0) ? getResources().getColor(R.color.red) : getResources().getColor(R.color.green);
+                String formattedAmount = (type == 0 ? "-" : "+") + amountText;
 
                 // Thêm giao dịch vào danh sách
                 transactions.add(new Transaction(id, formattedAmount, description, date, categoryName, textColor, type));
@@ -234,6 +234,9 @@ public class ReportFragment extends Fragment {
         try {
             pdfDocument.writeTo(new FileOutputStream(pdfFile));
             Toast.makeText(getContext(), "PDF exported successfully: " + pdfFile.getAbsolutePath(), Toast.LENGTH_LONG).show();
+
+            // Mở file PDF sau khi lưu
+            openPdfFile(pdfFile);
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(getContext(), "Error exporting PDF.", Toast.LENGTH_SHORT).show();
@@ -241,5 +244,31 @@ public class ReportFragment extends Fragment {
             pdfDocument.close();
         }
     }
+
+    /**
+     * Mở file PDF bằng ứng dụng xem PDF mặc định.
+     *
+     * @param pdfFile File PDF cần mở.
+     */
+    private void openPdfFile(File pdfFile) {
+        if (pdfFile.exists()) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(androidx.core.content.FileProvider.getUriForFile(
+                    requireContext(),
+                    requireContext().getPackageName() + ".fileprovider",
+                    pdfFile
+            ), "application/pdf");
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            try {
+                startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(getContext(), "No application found to open PDF.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getContext(), "PDF file not found.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
 }
